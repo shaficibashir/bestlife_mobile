@@ -10,6 +10,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../components/common/touch_spin.dart';
 import 'package:get/get.dart';
 import '../../controllers/cart_controller.dart';
+import '../../controllers/product_images_controller.dart';
 
 
 class ItemSizes {
@@ -54,6 +55,7 @@ class _ProductDetailState extends State<ProductDetail> {
   
   String? imagePath;
   late ProductDetailArguments args;
+  final ProductImagesController productImagesController = Get.put(ProductImagesController());
 
   @override
   void initState() {
@@ -62,6 +64,7 @@ class _ProductDetailState extends State<ProductDetail> {
       setState(() {
         imagePath = args.image;
       });
+      productImagesController.fetchProductImages(args.id);
     });
   }
 
@@ -299,97 +302,77 @@ class _ProductDetailState extends State<ProductDetail> {
                           ],
                         ),
                       ),
-                      Container(
-                        margin: EdgeInsets.only(bottom: 5),
-                        padding: const EdgeInsets.symmetric(horizontal: 15),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text('Items Size:',style: Theme.of(context).textTheme.titleMedium),
-                            const SizedBox(height: 10,),
-                            Row(
-                              children: productSizes.map((item) {
-                                return GestureDetector(
-                                  onTap: (){ 
-                                    setState(() {
-                                      selectedSize = item.title;
-                                    });
-                                  },
-                                  child : Container(
-                                    padding: EdgeInsets.symmetric(horizontal: 12,vertical: 8),
-                                    margin: EdgeInsets.only(right: 10),
-                                    color: selectedSize == item.title ? Theme.of(context).textTheme.titleMedium?.color : Theme.of(context).canvasColor,
-                                    child: Text(item.title, style: Theme.of(context).textTheme.titleMedium?.merge(TextStyle(fontSize: 13,fontWeight: FontWeight.w500,color: selectedSize == item.title ? Theme.of(context).cardColor : Theme.of(context).textTheme.titleMedium?.color))),
-                                  )
-                                );
-                              }).toList(),
-                            )
-                          ],
-                        ),
-                      ),
+                      
                       Container(
                         padding: const EdgeInsets.all(15),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text('Items Color:',style: Theme.of(context).textTheme.titleMedium),
-                            const SizedBox(height: 10,),
-                            Row(
-                              children: productColor.map((item) {
-                                return GestureDetector(
-                                  onTap: (){ 
-                                    setState(() {
-                                      selectedColor = item.color;
-                                    });
+                            Text('Product Images:', style: Theme.of(context).textTheme.titleMedium),
+                            const SizedBox(height: 10),
+                            Obx(() {
+                              if (productImagesController.isLoading.value) {
+                                return Center(child: CircularProgressIndicator());
+                              }
+
+                              if (productImagesController.productImages.isEmpty) {
+                                return Text('No additional images available');
+                              }
+
+                              return Container(
+                                height: 100,
+                                child: ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: productImagesController.productImages.length,
+                                  itemBuilder: (context, index) {
+                                    final imageUrl = "http://192.168.100.7/bestlife-main/public/assets/imgs/product_image/${productImagesController.productImages[index]}";
+                                    return GestureDetector(
+                                      onTap: () => changeImage(imageUrl),
+                                      child: Container(
+                                        margin: EdgeInsets.only(right: 10),
+                                        width: 100,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            width: 2,
+                                            color: imagePath == imageUrl 
+                                                ? Theme.of(context).primaryColor 
+                                                : Theme.of(context).dividerColor,
+                                          ),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(6),
+                                          child: Image.network(
+                                            imageUrl,
+                                            fit: BoxFit.cover,
+                                            loadingBuilder: (context, child, loadingProgress) {
+                                              if (loadingProgress == null) return child;
+                                              return Center(
+                                                child: CircularProgressIndicator(
+                                                  value: loadingProgress.expectedTotalBytes != null
+                                                      ? loadingProgress.cumulativeBytesLoaded / 
+                                                        loadingProgress.expectedTotalBytes!
+                                                      : null,
+                                                ),
+                                              );
+                                            },
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return Center(
+                                                child: Icon(Icons.error_outline),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    );
                                   },
-                                  child : SizedBox(
-                                    height: 34,
-                                    width: 34,
-                                    child: Stack(
-                                      children: [
-                                        Center(
-                                          child: Container(
-                                            height: 20,
-                                            width: 20,
-                                            decoration: BoxDecoration(
-                                                color: item.color,
-                                                borderRadius: BorderRadius.circular(25)
-                                            ),
-                                          ),
-                                        ),
-                                        if(selectedColor == item.color)
-                                        Positioned(
-                                          child: Container(
-                                              height: 34,
-                                              width: 34,
-                                              decoration: BoxDecoration(
-                                                 border: Border.all(width: 1, color:Theme.of(context).dividerColor),
-                                                 borderRadius: BorderRadius.circular(25)
-                                              ),
-                                              child: Icon(Icons.check, size: 15, color: Colors.white,),
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  )
-                                );
-                              }).toList(),
-                            )
+                                ),
+                              );
+                            }),
                           ],
                         ),
                       ),
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.all(15),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Text('Description:',style: Theme.of(context).textTheme.headlineSmall?.merge(TextStyle(fontWeight: FontWeight.bold))),
-                            const SizedBox(height: 6),
-                            Text('There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humor.',style: Theme.of(context).textTheme.titleMedium?.merge(TextStyle(fontWeight: FontWeight.w300,height: 1.5)))
-                          ],
-                        ),
-                      ),
+                     
                     ],
                   ),
                 )

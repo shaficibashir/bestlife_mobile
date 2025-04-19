@@ -459,7 +459,7 @@ class _HomeState extends State<Home> {
                           children: categoryController.categoryList.map((category) {
                             return GestureDetector(
                               onTap: () {
-                                categoryController.selectedCategory.value = category.categoryName;
+                                // categoryController.selectedCategory.value = '';
                                 // You might want to fetch products based on category here
                                 Future.microtask(() {
                                   Navigator.pushNamed(context, '/products');

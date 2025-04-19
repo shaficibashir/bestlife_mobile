@@ -36,6 +36,15 @@ class _ProductsState extends State<Products> {
   String _productView = "grid";
 
   @override
+  void initState() {
+    super.initState();
+    // Use addPostFrameCallback to schedule the fetch after the build is complete
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      productController.fetchProducts();
+    });
+  }
+
+  @override
   Widget build(BuildContext context){
     return Scaffold(
       appBar: PreferredSize(
@@ -143,8 +152,16 @@ class _ProductsState extends State<Products> {
                       children: categoryController.categoryList.map((category) {
                         return GestureDetector(
                           onTap: () {
-                            categoryController.selectedCategory.value = category.categoryName;
-                            // You can add category filtering logic here
+                            // Immediately update the selected category
+                            if (categoryController.selectedCategory.value != category.categoryName) {
+                              categoryController.selectedCategory.value = category.categoryName;
+                              // Fetch products immediately
+                              productController.fetchProductsByCategory(category.id);
+                            } else {
+                              // Reset category and fetch all products
+                              categoryController.selectedCategory.value = '';
+                              productController.fetchProducts();
+                            }
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -180,6 +197,19 @@ class _ProductsState extends State<Products> {
                           return Center(child: CircularProgressIndicator());
                         }
 
+                        if (productController.productList.isEmpty) {
+                          return Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(20),
+                              child: Text(
+                                'No products available',
+                                style: Theme.of(context).textTheme.titleMedium,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          );
+                        }
+
                         return Wrap(
                           children: productController.productList.map((product) {
                             return SizedBox(
@@ -203,10 +233,10 @@ class _ProductsState extends State<Products> {
                                         id: product.id,
                                         title: product.productName,
                                         price: product.productPrice,
-                                        oldPrice: product.productPrice, // Add to model if needed
+                                        oldPrice: product.productPrice,
                                         image: "http://192.168.100.7/bestlife-main/public/assets/imgs/product_image/${product.brandImg}",
-                                        offer: "0% Off", // Add to model if needed
-                                        review: "(0 Review)" // Add to model if needed
+                                        offer: "0% Off",
+                                        review: "(0 Review)"
                                       ),
                                     )
                                   : ProductCard(

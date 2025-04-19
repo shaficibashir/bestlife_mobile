@@ -4,8 +4,8 @@ import 'dart:convert';
 import '../models/product.dart';
 
 class ProductController extends GetxController {
-  var isLoading = true.obs;
   var productList = <Product>[].obs;
+  var isLoading = true.obs;
   var responseText = ''.obs;
 
   @override
@@ -14,9 +14,29 @@ class ProductController extends GetxController {
     super.onInit();
   }
 
+  Future<void> fetchProductsByCategory(String categoryId) async {
+    try {
+
+      print( categoryId);
+      isLoading.value = true;
+      var response = await http.get(
+        Uri.parse('http://192.168.100.7/bestlife-main/en/mobi/getProductsByCategory/$categoryId')
+      );
+      
+      if (response.statusCode == 200) {
+        var jsonData = json.decode(response.body) as List;
+        productList.value = jsonData.map((item) => Product.fromJson(item)).toList();
+      }
+    } catch (e) {
+      print('Error fetching products by category: $e');
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   Future<void> fetchProducts() async {
     try {
-      isLoading(true);
+      isLoading.value = true;
       var response = await http.get(
         Uri.parse('http://192.168.100.7/bestlife-main/en/mobi/getProductList')
       );
@@ -30,9 +50,9 @@ class ProductController extends GetxController {
         productList.value = jsonData.map((item) => Product.fromJson(item)).toList();
       }
     } catch (e) {
-      print('Error while getting products: $e');
+      print('Error fetching products: $e');
     } finally {
-      isLoading(false);
+      isLoading.value = false;
     }
   }
 } 

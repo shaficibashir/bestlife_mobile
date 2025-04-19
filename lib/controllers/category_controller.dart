@@ -4,14 +4,14 @@ import 'dart:convert';
 import '../models/category.dart';
 
 class CategoryController extends GetxController {
-  var isLoading = true.obs;
   var categoryList = <Category>[].obs;
-  var selectedCategory = "".obs;
+  var selectedCategory = ''.obs;
+  var isLoading = true.obs;
 
   @override
   void onInit() {
-    fetchCategories();
     super.onInit();
+    fetchCategories();
   }
 
   Future<void> fetchCategories() async {
@@ -24,12 +24,9 @@ class CategoryController extends GetxController {
       if (response.statusCode == 200) {
         var jsonData = json.decode(response.body) as List;
         categoryList.value = jsonData.map((item) => Category.fromJson(item)).toList();
-        if (categoryList.isNotEmpty) {
-          selectedCategory.value = categoryList[0].categoryName;
-        }
       }
     } catch (e) {
-      print('Error while getting categories: $e');
+      print('Error fetching categories: $e');
     } finally {
       isLoading(false);
     }
