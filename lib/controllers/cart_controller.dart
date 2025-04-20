@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:lookme/components/modal/success_modal.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import '../models/product.dart';
 import 'package:flutter/material.dart';
@@ -13,38 +13,38 @@ class CartController extends GetxController {
 
   @override
   void onInit() {
-    // loadCartFromStorage();
+    loadCartFromStorage();
     super.onInit();
   }
 
-  // Future<void> loadCartFromStorage() async {
-  //   try {
-  //     isLoading(true);
-  //     final prefs = await SharedPreferences.getInstance();
-  //     final String? cartData = prefs.getString(cartKey);
+  Future<void> loadCartFromStorage() async {
+    try {
+      isLoading(true);
+      final prefs = await SharedPreferences.getInstance();
+      final String? cartData = prefs.getString(cartKey);
       
-  //     if (cartData != null) {
-  //       final List<dynamic> decodedData = json.decode(cartData);
-  //       cartItems.value = decodedData.map((item) => Product.fromJson(item)).toList();
-  //     }
-  //   } catch (e) {
-  //     print('Error loading cart: $e');
-  //   } finally {
-  //     isLoading(false);
-  //   }
-  // }
+      if (cartData != null) {
+        final List<dynamic> decodedData = json.decode(cartData);
+        cartItems.value = decodedData.map((item) => Product.fromJson(item)).toList();
+      }
+    } catch (e) {
+      print('Error loading cart: $e');
+    } finally {
+      isLoading(false);
+    }
+  }
 
-  // Future<void> saveCartToStorage() async {
-  //   try {
-  //     final prefs = await SharedPreferences.getInstance();
-  //     final String encodedData = json.encode(cartItems.map((item) => item.toJson()).toList());
-  //     await prefs.setString(cartKey, encodedData);
-  //   } catch (e) {
-  //     print('Error saving cart: $e');
-  //   }
-  // }
+  Future<void> saveCartToStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final String encodedData = json.encode(cartItems.map((item) => item.toJson()).toList());
+      await prefs.setString(cartKey, encodedData);
+    } catch (e) {
+      print('Error saving cart: $e');
+    }
+  }
 
-  void addToCart(Product product) {
+  void addToCart(Product product) async {
     try {
       if (product.id.isEmpty || product.productName.isEmpty) {
         throw Exception('Invalid product data');
@@ -52,6 +52,7 @@ class CartController extends GetxController {
 
       if (!cartItems.any((item) => item.id == product.id)) {
         cartItems.add(product);
+        await saveCartToStorage();
         print("Item added to cart");
         
         Get.rawSnackbar(
@@ -94,9 +95,10 @@ class CartController extends GetxController {
     }
   }
 
-  void removeFromCart(String productId) {
+  void removeFromCart(String productId) async {
     try {
       cartItems.removeWhere((item) => item.id == productId);
+      await saveCartToStorage();
       Get.rawSnackbar(
         messageText: Text(
           'Item removed from cart',

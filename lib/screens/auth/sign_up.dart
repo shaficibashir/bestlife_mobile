@@ -151,37 +151,7 @@ const SignUp({ super.key });
                             child: const Text('Sign Up')),
                         ),
                         const SizedBox(height: 40),
-                        Row (
-                          children: [
-                            Expanded(child: Container( height:1, color:Theme.of(context).textTheme.titleMedium?.color,)),
-                            const SizedBox(width: 10),
-                            Text('Or continue with', style: Theme.of(context).textTheme.labelMedium?.merge(TextStyle(color: Theme.of(context).textTheme.titleMedium?.color,fontSize: 13, fontWeight: FontWeight.w500)), ),
-                            const SizedBox(width: 10),
-                            Expanded(child: Container(height:1, color:Theme.of(context).textTheme.titleMedium?.color,))
-                          ]
-
-                        ),
-                        const SizedBox(height: 40),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 0,bottom: 0),
-                          child: SocialButton(
-                            onTap :(){
-                            },
-                            type : 'google',
-                            title : 'Sign in with google'
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 0,bottom: 0),
-                          child: SocialButton(
-                            onTap :(){
-                            },
-                            type : 'facebook',
-                            title : 'Sign in with facebook'
-                          ),
-                        ),
-                        const SizedBox(height: 30),
+                       
                         RichText(
                           textAlign: TextAlign.center,
                           text: TextSpan(
