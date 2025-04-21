@@ -3,29 +3,35 @@ import 'package:lookme/utils/constants/colors.dart';
 import 'package:lookme/utils/constants/images.dart';
 import 'package:flutter/material.dart';
 import 'package:lookme/utils/constants/sizes.dart';
+import 'package:lookme/controllers/auth_controller.dart';
 
 class Splash extends StatefulWidget {
   const Splash({ super.key });
 
   @override
-  // ignore: library_private_types_in_public_api
   _SplashState createState() => _SplashState();
 }
 
 class _SplashState extends State<Splash> {
   
-  void setupWorldTime() async {
+  Future<void> checkAuthStatus() async {
+    final isLoggedIn = await AuthController.isLoggedIn();
     
-    Timer(const Duration(seconds: 1), () => 
-      Navigator.pushReplacementNamed(context, "/onboarding")
-    );
-
+    if (mounted) {
+      Timer(const Duration(seconds: 2), () {
+        if (isLoggedIn) {
+          Navigator.pushReplacementNamed(context, '/main_home');
+        } else {
+          Navigator.pushReplacementNamed(context, '/signin');
+        }
+      });
+    }
   }
 
   @override
   void initState(){
     super.initState();
-    setupWorldTime();
+    checkAuthStatus();
   } 
 
   @override
@@ -41,7 +47,7 @@ class _SplashState extends State<Splash> {
           decoration: const BoxDecoration(
             image: DecorationImage(
               image: AssetImage(IKImages.splash),
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
             ),
           ),
           child: Column(

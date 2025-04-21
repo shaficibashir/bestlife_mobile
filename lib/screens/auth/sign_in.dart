@@ -2,12 +2,58 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:lookme/components/social/social_button.dart';
 import 'package:lookme/utils/constants/images.dart';
+import 'package:lookme/controllers/auth_controller.dart';
 import '../../utils/constants/colors.dart';
 import '../../utils/constants/sizes.dart';
 
-class SignIn extends StatelessWidget {
-  
-const SignIn({ super.key });
+class SignIn extends StatefulWidget {
+  const SignIn({ super.key });
+
+  @override
+  State<SignIn> createState() => _SignInState();
+}
+
+class _SignInState extends State<SignIn> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _handleLogin() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final result = await AuthController.login(
+      _emailController.text,
+      _passwordController.text,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (result['success'] == true) {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/main_home');
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message'])),
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context){
@@ -61,6 +107,7 @@ const SignIn({ super.key });
                         ),
                         const SizedBox(height: 5),
                         TextField(
+                          controller: _emailController,
                           decoration: InputDecoration(
                             contentPadding: const EdgeInsets.all(15),
                             filled: true,
@@ -83,6 +130,8 @@ const SignIn({ super.key });
                         ),
                         const SizedBox(height: 5),
                         TextField(
+                          controller: _passwordController,
+                          obscureText: true,
                           decoration: InputDecoration(
                             contentPadding: const EdgeInsets.all(15),
                             filled: true,
@@ -122,18 +171,24 @@ const SignIn({ super.key });
                         Padding(
                           padding: const EdgeInsets.all(0.0),
                           child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/main_home');
-                            },
+                            onPressed: _isLoading ? null : _handleLogin,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Theme.of(context).textTheme.titleMedium?.color,
                               side: const BorderSide(color: IKColors.secondary),
                               foregroundColor: Theme.of(context).cardColor
                             ), 
-                            child: const Text('Sign in')),
+                            child: _isLoading 
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                )
+                              : const Text('Sign in')),
                         ),
                         const SizedBox(height: 40),
-                      
                        
                         RichText(
                           textAlign: TextAlign.center,

@@ -3,6 +3,7 @@ import 'package:lookme/utils/constants/images.dart';
 import 'package:lookme/utils/constants/svg.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lookme/controllers/auth_controller.dart';
 
 class DrawerMenu extends StatefulWidget {
   const DrawerMenu({ super.key });
@@ -12,6 +13,28 @@ class DrawerMenu extends StatefulWidget {
 }
 
 class _DrawerMenuState extends State<DrawerMenu> {
+  Map<String, dynamic>? userData;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final data = await AuthController.getUserData();
+    setState(() {
+      userData = data;
+    });
+  }
+
+  Future<void> _handleLogout() async {
+    await AuthController.clearUserData();
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/signin');
+    }
+  }
+
   final List<Map<String, String>> menuItems = [
     {'name': 'Home', 'icon': IKSvg.home, 'navigate' : '/main_home'},
     {'name': 'Products', 'icon': IKSvg.bag, 'navigate' : '/products'},
@@ -22,12 +45,10 @@ class _DrawerMenuState extends State<DrawerMenu> {
     {'name': 'My Cart', 'icon': IKSvg.cart, 'navigate' : '/cart'},
     {'name': 'Profile', 'icon': IKSvg.user, 'navigate' : '/profile'},
     {'name': 'Messages', 'icon': IKSvg.chat, 'navigate' : '/chat_list'},
-    {'name': 'Logout', 'icon': IKSvg.signout, 'navigate' : '/signin'},
   ];
 
   @override
   Widget build(BuildContext context){
-    
     return Container(
       color: Theme.of(context).cardColor,
       child: Drawer(
@@ -53,9 +74,15 @@ class _DrawerMenuState extends State<DrawerMenu> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Text('Shafie Bashir',style: Theme.of(context).textTheme.headlineMedium),
+                              Text(
+                                '${userData?['firstname'] ?? ''} ${userData?['lastname'] ?? ''}',
+                                style: Theme.of(context).textTheme.headlineMedium,
+                              ),
                               const SizedBox(height: 3),
-                              Text('shafiebashir@gmail.com',style: Theme.of(context).textTheme.bodyMedium?.merge(const TextStyle(fontSize: 15))),
+                              Text(
+                                userData?['email'] ?? '',
+                                style: Theme.of(context).textTheme.bodyMedium?.merge(const TextStyle(fontSize: 15)),
+                              ),
                             ],
                           ),
                         )
@@ -65,11 +92,35 @@ class _DrawerMenuState extends State<DrawerMenu> {
                   Padding(
                     padding: const EdgeInsets.all(15),
                     child: Column(
-                      children: menuItems.map((item) {
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.pushNamed(context, item['navigate']!);
-                          },
+                      children: [
+                        ...menuItems.map((item) {
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.pushNamed(context, item['navigate']!);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 5),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    height: 40,
+                                    width: 40,
+                                    margin: const EdgeInsets.only(right: 10),
+                                    alignment: Alignment.center,
+                                    child: SvgPicture.string(item['icon']!,height: 20,width: 20,color: IKColors.primary),
+                                  ),
+                                  Expanded(
+                                    child: Text(item['name']!,style: Theme.of(context).textTheme.titleLarge?.merge(const TextStyle(fontWeight: FontWeight.w500))),
+                                  ),
+                                  Icon(Icons.chevron_right,color: Theme.of(context).textTheme.bodyMedium?.color)
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                        // Logout button
+                        GestureDetector(
+                          onTap: _handleLogout,
                           child: Padding(
                             padding: const EdgeInsets.symmetric(vertical: 5),
                             child: Row(
@@ -79,18 +130,17 @@ class _DrawerMenuState extends State<DrawerMenu> {
                                   width: 40,
                                   margin: const EdgeInsets.only(right: 10),
                                   alignment: Alignment.center,
-                                  // ignore: deprecated_member_use
-                                  child: SvgPicture.string(item['icon']!,height: 20,width: 20,color: IKColors.primary),
+                                  child: SvgPicture.string(IKSvg.signout,height: 20,width: 20,color: IKColors.primary),
                                 ),
                                 Expanded(
-                                  child: Text(item['name']!,style: Theme.of(context).textTheme.titleLarge?.merge(const TextStyle(fontWeight: FontWeight.w500))),
+                                  child: Text('Logout',style: Theme.of(context).textTheme.titleLarge?.merge(const TextStyle(fontWeight: FontWeight.w500))),
                                 ),
                                 Icon(Icons.chevron_right,color: Theme.of(context).textTheme.bodyMedium?.color)
                               ],
                             ),
                           ),
-                        );
-                      }).toList(),
+                        ),
+                      ],
                     ),
                   )
                 ],
@@ -120,7 +170,6 @@ class _DrawerMenuState extends State<DrawerMenu> {
                           ),
                         ),
                         Text('App Version 1.0',style: Theme.of(context).textTheme.titleLarge?.merge(const TextStyle(fontWeight: FontWeight.w300,fontSize: 13))),
-
                       ],
                     ),
                   ),

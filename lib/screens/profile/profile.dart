@@ -6,9 +6,30 @@ import 'package:lookme/utils/constants/sizes.dart';
 import 'package:lookme/utils/constants/svg.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lookme/controllers/auth_controller.dart';
 
-class Profile extends StatelessWidget {
+class Profile extends StatefulWidget {
   const Profile({ super.key });
+
+  @override
+  State<Profile> createState() => _ProfileState();
+}
+
+class _ProfileState extends State<Profile> {
+  Map<String, dynamic>? userData;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final data = await AuthController.getUserData();
+    setState(() {
+      userData = data;
+    });
+  }
 
   @override
   Widget build(BuildContext context){
@@ -86,7 +107,10 @@ class Profile extends StatelessWidget {
                           const SizedBox(width: 15),
                           Text('Hello,',style: Theme.of(context).textTheme.headlineLarge?.merge(const TextStyle(fontWeight: FontWeight.w300,fontSize: 24))),
                           const SizedBox(width: 5),
-                          Text('shafie',style: Theme.of(context).textTheme.headlineLarge?.merge(const TextStyle(fontWeight: FontWeight.bold,fontSize: 24,color: IKColors.primary))),
+                          Text(
+                            userData?['firstname'] ?? '',
+                            style: Theme.of(context).textTheme.headlineLarge?.merge(const TextStyle(fontWeight: FontWeight.bold,fontSize: 24,color: IKColors.primary))
+                          ),
                         ],
                       ),
                       const SizedBox(height: 15),
@@ -109,38 +133,7 @@ class Profile extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 5),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.pushNamed(context, '/wishlist');
-                            },
-                            child: Container(
-                              width: MediaQuery.of(context).size.width > IKSizes.container ?
-                                IKSizes.container / 2 - 17.5
-                                :
-                                MediaQuery.of(context).size.width / 2 - 17.5,
-                              margin: const EdgeInsets.only(bottom: 5),
-                              padding: const EdgeInsets.all(11),
-                              alignment: Alignment.center,
-                              color: Theme.of(context).canvasColor,
-                              child: Text('Wishlist',style: Theme.of(context).textTheme.titleMedium?.merge(TextStyle(fontWeight: FontWeight.w500,fontSize: 15))),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.pushNamed(context, '/coupons');
-                            },
-                            child: Container(
-                              width: MediaQuery.of(context).size.width > IKSizes.container ?
-                                IKSizes.container / 2 - 17.5
-                                :
-                                MediaQuery.of(context).size.width / 2 - 17.5,
-                              padding: const EdgeInsets.all(11),
-                              alignment: Alignment.center,
-                              color: Theme.of(context).canvasColor,
-                              child: Text('Coupons',style: Theme.of(context).textTheme.titleMedium?.merge(TextStyle(fontWeight: FontWeight.w500,fontSize: 15))),
-                            ),
-                          ),
-                          const SizedBox(width: 5),
+                          
                           GestureDetector(
                             onTap: () {
                               Navigator.pushNamed(context, '/track_order');
@@ -187,18 +180,7 @@ class Profile extends StatelessWidget {
                               ),
                               title: "Edit profile",
                             ),
-                            ListItem(
-                              onTap: (){
-                                Navigator.pushNamed(context, '/payment');
-                              },
-                              icon: SvgPicture.string(
-                                IKSvg.card,
-                                width: 20,
-                                height: 20,
-                                color: IKColors.primary,
-                              ),
-                              title: "Saved Cards & Wallet",
-                            ),
+                            
                             ListItem(
                               onTap: (){
                                 Navigator.pushNamed(context, '/delivery_address');
@@ -260,18 +242,7 @@ class Profile extends StatelessWidget {
                         padding: const EdgeInsets.all(15),
                         child: Column(
                           children: [
-                            ListItem(
-                              onTap: (){
-                                Navigator.pushNamed(context, '/write_review');
-                              },
-                              icon: SvgPicture.string(
-                                IKSvg.review,
-                                width: 20,
-                                height: 20,
-                                color: IKColors.primary,
-                              ),
-                              title: "Reviews",
-                            ),
+                           
                             ListItem(
                               onTap: (){
                                 Navigator.pushNamed(context, '/questions');
